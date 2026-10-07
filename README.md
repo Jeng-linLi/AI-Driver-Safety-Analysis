@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 5 / 12（接續 Week 6–8）**
+> 狀態：**WIP（進行中）— 目前進度 Week 6 / 12（接續 Week 7–8）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -27,7 +27,7 @@
 - [x] 自建交通 Dataset（YOLO 格式 + dataset.yaml）— Week 3 ✅
 - [x] Model Fine-tuning（YOLOv8n + 合成資料，mAP50 0.958）— Week 4 ✅
 - [x] Model Evaluation（mAP50 0.958, Confusion Matrix）— Week 5 ✅
-- [ ] Lane Detection — Week 6
+- [x] Lane Detection（Canny + Hough + ROI）— Week 6 ✅
 - [ ] Risk Analysis（LOW / MEDIUM / HIGH）— Week 7
 - [ ] Real-Time Pipeline — Week 8
 - [ ] Experiments Log — Week 9
@@ -38,8 +38,8 @@
 ## 4. System Architecture
 
 ```
-（規劃中，Week 7–8 整合時補上架構圖）
-Video/Webcam → Object Detection → Lane Detection → Risk Analysis → Visualization
+Video/Webcam → Object Detection (YOLO) → Lane Detection (Canny+Hough) → Risk Analysis → Visualization
+（架構圖預計 Week 7–8 整合時補上）
 ```
 
 ## 5. Dataset
@@ -154,6 +154,20 @@ python src/evaluate.py --weights models/best.pt
 
 > 輸出指標到 results/evaluation_metrics.json，混淆矩陣到 runs/detect/week5_eval/confusion_matrix.png。
 
+### Week 6 — Lane Detection
+
+```bash
+# 用傳統 CV（Canny + Hough + ROI）找出車道線，輸出疊加黃線的影片
+python src/lane_detection.py data/raw/your_driving_video.mp4 results/videos/lane_detected.mp4
+
+# 沒有行車影片？先產一段合成車道影片來試跑
+python data/make_synthetic_road_video.py --out results/videos/road_demo.mp4 --frames 120
+python src/lane_detection.py results/videos/road_demo.mp4 results/videos/lane_detected.mp4
+```
+
+> 這週「不用 AI 模型」，純 OpenCV 經典演算法：先找邊緣、只看車道區域、再把邊緣點連成直線。
+> 對清晰 / 合成路面效果最好；真實雨天、Shadow、彎道需要更多前處理。
+
 ## 12. Results
 
 陸續補上（Week 5 / Week 9）。
@@ -184,7 +198,7 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 | 3 | Dataset | ✅ |
 | 4 | Model Fine-tuning | ✅ |
 | 5 | Model Evaluation | ✅ |
-| 6 | Lane Detection | ⬜ |
+| 6 | Lane Detection | ✅ |
 | 7 | Risk Analysis | ⬜ |
 | 8 | Real-Time Integration | ⬜ |
 | 9 | Experiments | ⬜ |
