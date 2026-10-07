@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 6 / 12（接續 Week 7–8）**
+> 狀態：**WIP（進行中）— 目前進度 Week 7 / 12（接續 Week 8）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -28,6 +28,7 @@
 - [x] Model Fine-tuning（YOLOv8n + 合成資料，mAP50 0.958）— Week 4 ✅
 - [x] Model Evaluation（mAP50 0.958, Confusion Matrix）— Week 5 ✅
 - [x] Lane Detection（Canny + Hough + ROI）— Week 6 ✅
+- [x] Risk Analysis（LOW / MEDIUM / HIGH，啟發式）— Week 7 ✅
 - [ ] Risk Analysis（LOW / MEDIUM / HIGH）— Week 7
 - [ ] Real-Time Pipeline — Week 8
 - [ ] Experiments Log — Week 9
@@ -168,6 +169,23 @@ python src/lane_detection.py results/videos/road_demo.mp4 results/videos/lane_de
 > 這週「不用 AI 模型」，純 OpenCV 經典演算法：先找邊緣、只看車道區域、再把邊緣點連成直線。
 > 對清晰 / 合成路面效果最好；真實雨天、Shadow、彎道需要更多前處理。
 
+### Week 7 — Risk Analysis
+
+```bash
+# 對行車影片做偵測 + 風險分析，輸出帶「風險橫幅」的影片
+python src/risk_analysis.py data/raw/your_driving_video.mp4 results/videos/risk_demo.mp4 --weights yolov8n.pt
+```
+
+風險規則（啟發式、可解釋）：
+
+| 等級 | 觸發條件 |
+|------|----------|
+| 🔴 HIGH | 近距離出現弱勢用路人（person / bicycle） |
+| 🟠 MEDIUM | 近距離車輛，或場景中有（較遠的）弱勢用路人 |
+| 🟢 LOW | 未偵測到相關道路物件 |
+
+> ⚠️ 這是「學習用」簡化規則，絕非真實自駕車安全判斷。真實系統還需要距離估測、追蹤、軌跡預測。
+
 ## 12. Results
 
 陸續補上（Week 5 / Week 9）。
@@ -199,7 +217,7 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 | 4 | Model Fine-tuning | ✅ |
 | 5 | Model Evaluation | ✅ |
 | 6 | Lane Detection | ✅ |
-| 7 | Risk Analysis | ⬜ |
+| 7 | Risk Analysis | ✅ |
 | 8 | Real-Time Integration | ⬜ |
 | 9 | Experiments | ⬜ |
 | 10 | Web Demo (Streamlit) | ⬜ |
