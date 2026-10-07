@@ -25,6 +25,9 @@ models/*.onnx
 # === 合成 dataset（可由 data/make_synthetic_dataset.py 重新產生，不進 Git）===
 data/traffic_dataset/
 
+# === 訓練輸出（runs/ 由 ultralytics 產生，含圖表/權重）===
+runs/
+
 # === 系統 / 編輯器 ===
 .DS_Store
 .idea/
