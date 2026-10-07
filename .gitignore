@@ -28,6 +28,10 @@ data/traffic_dataset/
 # === 訓練輸出（runs/ 由 ultralytics 產生，含圖表/權重）===
 runs/
 
+# === 內部 agent 資料 / 預訓練權重（不進 Git）===
+.workbuddy-ai/
+yolov8n.pt
+
 # === 系統 / 編輯器 ===
 .DS_Store
 .idea/
