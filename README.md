@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 2 / 12（目標推進至 Week 4）**
+> 狀態：**WIP（進行中）— 目前進度 Week 3 / 12（接續 Week 4 Fine-tuning）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -24,6 +24,7 @@
 
 - [x] 讀取圖片 / 影片 / 儲存影片（Week 1）
 - [x] Object Detection（car / person / truck / bus ...）— Week 2 ✅
+- [x] 自建交通 Dataset（YOLO 格式 + dataset.yaml）— Week 3 ✅
 - [ ] 自建交通 Dataset — Week 3
 - [ ] Model Fine-tuning — Week 4
 - [ ] Model Evaluation（mAP / Precision / Recall）— Week 5
@@ -44,7 +45,13 @@ Video/Webcam → Object Detection → Lane Detection → Risk Analysis → Visua
 
 ## 5. Dataset
 
-規劃中（Week 3）。
+目前使用「合成交通場景」資料集（Week 3 生成，YOLO 格式）：
+- 4 類：car / person / truck / bus
+- 120 張（train 96 / val 24），416×416
+- 由 `data/make_synthetic_dataset.py` 重新產生（已 gitignore，不進 Git）
+
+> 這是為了把「訓練管線」跑通的可重現資料。
+> 正式版請替換為真實交通資料集（用 LabelImg / Roboflow 標註成相同 YOLO 格式即可）。
 
 ## 6. Model
 
@@ -128,7 +135,7 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 |------|------|------|
 | 1 | Python / OpenCV / Git | ✅ 進行中 |
 | 2 | Object Detection (YOLO) | ✅ |
-| 3 | Dataset | ⬜ |
+| 3 | Dataset | ✅ |
 | 4 | Model Fine-tuning | ⬜ |
 | 5 | Model Evaluation | ⬜ |
 | 6 | Lane Detection | ⬜ |
