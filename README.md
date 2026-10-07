@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 1 / 12**
+> 狀態：**WIP（進行中）— 目前進度 Week 2 / 12（目標推進至 Week 4）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -23,7 +23,7 @@
 ## 3. Features
 
 - [x] 讀取圖片 / 影片 / 儲存影片（Week 1）
-- [ ] Object Detection（car / person / truck ...）— Week 2
+- [x] Object Detection（car / person / truck / bus ...）— Week 2 ✅
 - [ ] 自建交通 Dataset — Week 3
 - [ ] Model Fine-tuning — Week 4
 - [ ] Model Evaluation（mAP / Precision / Recall）— Week 5
@@ -89,6 +89,18 @@ python src/video_io.py show data/raw/your_driving_video.mp4
 > 還沒有行車影片？把任何一段 mp4 放進 `data/raw/` 就能先試跑。
 > （注意：`data/raw/*.mp4` 已被 .gitignore 忽略，不會進 Git。）
 
+### Week 2 — Object Detection
+
+```bash
+# 對行車影片做 YOLO 偵測，輸出帶 Bounding Box + 標籤 + Confidence 的影片
+python src/detection.py data/raw/your_driving_video.mp4 results/videos/detected.mp4
+
+# 提高嚴格度（只保留信心 >= 0.5 的預測）
+python src/detection.py data/raw/your_driving_video.mp4 results/videos/detected.mp4 --conf 0.5
+```
+
+> 僅關注道路安全相關類別：person / bicycle / car / motorcycle / bus / truck / traffic light / stop sign。
+
 ## 12. Results
 
 陸續補上（Week 5 / Week 9）。
@@ -115,7 +127,7 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 | Week | 主題 | 狀態 |
 |------|------|------|
 | 1 | Python / OpenCV / Git | ✅ 進行中 |
-| 2 | Object Detection (YOLO) | ⬜ |
+| 2 | Object Detection (YOLO) | ✅ |
 | 3 | Dataset | ⬜ |
 | 4 | Model Fine-tuning | ⬜ |
 | 5 | Model Evaluation | ⬜ |
