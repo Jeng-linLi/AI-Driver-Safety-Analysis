@@ -1,6 +1,9 @@
 # AI Driver Safety Analysis — Python 依賴
 # 安裝方式：pip install -r requirements.txt
-# 目前只放 Week 1 需要的套件；後續週次會陸續加入（ultralytics / torch ...）
-
+# Week 1 基礎
 numpy>=2.0
 opencv-python>=4.10
+# Week 2+：YOLO Object Detection / Fine-tuning（會自動安裝 torch）
+ultralytics>=8.0
+
+# 註：torch 由 ultralytics 相依自動安裝（CPU 版即可跑 prototype）。
