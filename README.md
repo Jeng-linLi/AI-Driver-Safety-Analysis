@@ -199,11 +199,24 @@ python src/realtime.py data/raw/your_driving_video.mp4 results/videos/realtime.m
 
 # 用 webcam 即時分析（裝置編號 0）
 python src/realtime.py 0 results/videos/webcam_out.mp4
+
+# 效能優化：降推理解析度 + 跳幀（CPU 上 FPS 明顯提升）
+python src/realtime.py data/raw/your_driving_video.mp4 results/videos/realtime.mp4 \
+    --imgsz 320 --detect-every 2
 ```
 
-實測效能（CPU、合成 640×360 影片）：平均約 **21 FPS**（YOLOv8n + 車道 + 風險同跑）。
-> 這是「近即時」prototype：合成畫面簡單所以 FPS 偏高；真實影片物件多、解析度高時會明顯變慢。
-> 要真正即時需上 GPU / 更小模型（YOLOv8nano 已是最輕量級之一）/ 或只對關鍵幀做偵測。
+實測效能（CPU、合成 640×360 影片，30 幀平均）：
+
+| 配置 | 平均 FPS |
+|------|----------|
+| imgsz=640, detect-every=1（原版） | ~21 |
+| imgsz=320, detect-every=1 | ~32（≈1.5×） |
+| imgsz=320, detect-every=2 | ~108* |
+
+> \* 合成片段幾乎無物件，跳幀主要省下「推論」開銷，因此 FPS 很高；真實繁忙畫面會介於兩者之間，但仍明顯快於原版。
+> 這是「近即時」prototype：合成畫面簡單所以 FPS 偏高；真實影片物件多、解析度高時會變慢。要真正即時需上 GPU / 更小模型 / 或只對關鍵幀偵測。
+>
+> 程式碼層面已重構：`detect_and_draw()`（偵測+畫框）與 `resolve_data_yaml()` 抽出到 `src/detection.py` / `src/common.py` 共用，消除 risk_analysis / realtime / train / evaluate 之間的重複碼。
 
 ## 12. Results
 

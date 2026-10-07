@@ -20,35 +20,17 @@ from __future__ import annotations
 
 import argparse
 import sys
-from dataclasses import dataclass
 
 import cv2
 from ultralytics import YOLO
 
-# 與 detection.py 共用：只關注道路安全類別
-TARGET_CLASSES = {
-    "person",
-    "bicycle",
-    "car",
-    "motorcycle",
-    "bus",
-    "truck",
-    "traffic light",
-    "stop sign",
-}
+from detection import TARGET_CLASSES, Detection, detect_and_draw, load_model
 
 # 「弱勢用路人」：一出現就大幅提高風險
 VULNERABLE = {"person", "bicycle"}
 
 # 風險等級顏色（BGR）
 COLOR = {"LOW": (0, 200, 0), "MEDIUM": (0, 165, 255), "HIGH": (0, 0, 255)}
-
-
-@dataclass
-class Detection:
-    name: str
-    bbox: tuple[int, int, int, int]  # x1, y1, x2, y2
-    score: float
 
 
 def _area_fraction(bbox: tuple[int, int, int, int], frame_h: int, frame_w: int) -> float:
@@ -107,6 +89,7 @@ def process_video(
     output_path: str,
     conf: float = 0.25,
     max_frames: int = 600,
+    imgsz: int = 640,
 ) -> dict:
     """對影片逐幀做偵測 + 風險分析：畫框 + 頂部風險橫幅 → 寫入新影片。"""
     cap = cv2.VideoCapture(input_path)
@@ -127,20 +110,10 @@ def process_video(
         if not ok:
             break
 
-        results = model(frame, conf=conf, verbose=False)[0]
-        dets: list[Detection] = []
-        for box in results.boxes:
-            cls_id = int(box.cls[0])
-            name = model.names[cls_id]
-            if name not in TARGET_CLASSES:
-                continue
-            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-            score = float(box.conf[0])
-            dets.append(Detection(name, (x1, y1, x2, y2), score))
-            counts[name] = counts.get(name, 0) + 1
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, f"{name} {score:.2f}", (x1, max(0, y1 - 6)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        # 推論 + 畫框（共用 detection.detect_and_draw）
+        frame, dets = detect_and_draw(model, frame, conf, imgsz)
+        for d in dets:
+            counts[d.name] = counts.get(d.name, 0) + 1
 
         risk = assess_risk(dets, h, w)
         risk_counts[risk["level"]] += 1
@@ -166,11 +139,12 @@ def main() -> int:
     parser.add_argument("output", help="輸出影片路徑")
     parser.add_argument("--weights", default="yolov8n.pt", help="YOLO 權重")
     parser.add_argument("--conf", type=float, default=0.25)
+    parser.add_argument("--imgsz", type=int, default=640, help="推理解析度（越小越快）")
     parser.add_argument("--max-frames", type=int, default=600)
     args = parser.parse_args()
 
     model = YOLO(args.weights)
-    info = process_video(model, args.input, args.output, args.conf, args.max_frames)
+    info = process_video(model, args.input, args.output, args.conf, args.max_frames, args.imgsz)
     print(f"完成：{args.output}")
     print("處理幀數：", info["frames"])
     print("各類別偵測次數：", info["detections"])

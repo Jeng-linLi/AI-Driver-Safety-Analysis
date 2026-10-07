@@ -26,9 +26,9 @@ import time
 import cv2
 from ultralytics import YOLO
 
-from detection import TARGET_CLASSES, load_model
+from detection import TARGET_CLASSES, load_model, Detection, detect_and_draw
 from lane_detection import detect_lanes
-from risk_analysis import COLOR, Detection, assess_risk
+from risk_analysis import COLOR, assess_risk
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -40,7 +40,17 @@ def process_video(
     conf: float = 0.25,
     max_frames: int = 600,
     use_lane: bool = True,
+    imgsz: int = 640,
+    detect_every: int = 1,
 ) -> dict:
+    """即時管線：對影片/webcam 逐幀輸出偵測框 + 車道線 + 風險橫幅 + FPS。
+
+    效能優化：
+    - imgsz：推理解析度（320 在 CPU 上約比 640 快一倍，精度略降）。
+    - detect_every：每隔 N 幀才跑 YOLO，其餘幀複用上一幀的框（輕量 tracking），
+      可顯著拉高 FPS；代價是快速移動物件可能短暫「框跟不上」。
+    - 車道線在「乾淨畫面」上算，避免綠框/橫幅邊緣被誤連成黃線。
+    """
     cap = cv2.VideoCapture(input_path)
     if not cap.isOpened():
         raise FileNotFoundError(f"開啟影片/裝置失敗：{input_path}")
@@ -55,39 +65,38 @@ def process_video(
     risk_counts = {"LOW": 0, "MEDIUM": 0, "HIGH": 0}
     fps_smooth = 0.0
     prev_t = time.time()
+    last_dets = None
 
     while n < max_frames:
         ok, frame = cap.read()
         if not ok:
             break
 
-        # 1) Object Detection
-        results = model(frame, conf=conf, verbose=False)[0]
-        dets: list[Detection] = []
-        for box in results.boxes:
-            cls_id = int(box.cls[0])
-            name = model.names[cls_id]
-            if name not in TARGET_CLASSES:
-                continue
-            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-            score = float(box.conf[0])
-            dets.append(Detection(name, (x1, y1, x2, y2), score))
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, f"{name} {score:.2f}", (x1, max(0, y1 - 6)),
-                        FONT, 0.5, (0, 255, 0), 2)
+        # 0) 車道線先算在乾淨畫面上（避免標註干擾 edge 被誤連成黃線）
+        base = detect_lanes(frame) if use_lane else frame.copy()
 
-        # 2) Lane Detection（疊加黃線）
-        if use_lane:
-            frame = detect_lanes(frame)
+        # 1) Object Detection：可跳幀（其餘幀複用上一幀框）
+        if (n % detect_every == 0) or last_dets is None:
+            base, dets = detect_and_draw(model, base, conf, imgsz)
+            last_dets = dets
+        else:
+            for d in last_dets:
+                x1, y1, x2, y2 = d.bbox
+                cv2.rectangle(base, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(base, f"{d.name} {d.score:.2f}", (x1, max(0, y1 - 6)),
+                            FONT, 0.5, (0, 255, 0), 2)
+            dets = last_dets
 
-        # 3) Risk Analysis（頂部橫幅）
+        frame = base
+
+        # 2) Risk Analysis（頂部橫幅）
         risk = assess_risk(dets, h, w)
         risk_counts[risk["level"]] += 1
         cv2.rectangle(frame, (0, 0), (w, 40), COLOR[risk["level"]], -1)
         cv2.putText(frame, f"RISK: {risk['level']} ({risk['score']:.2f})",
                     (10, 27), FONT, 0.7, (255, 255, 255), 2)
 
-        # 4) FPS + 幀數
+        # 3) FPS + 幀數
         now = time.time()
         dt = now - prev_t
         prev_t = now
@@ -112,6 +121,8 @@ def main() -> int:
     parser.add_argument("--conf", type=float, default=0.25)
     parser.add_argument("--max-frames", type=int, default=600)
     parser.add_argument("--no-lane", action="store_true", help="關閉車道線")
+    parser.add_argument("--imgsz", type=int, default=640, help="推理解析度（越小越快）")
+    parser.add_argument("--detect-every", type=int, default=1, help="每隔 N 幀才跑 YOLO（>1 可加速）")
     args = parser.parse_args()
 
     # webcam 編號直接當 int 傳入 VideoCapture
@@ -122,7 +133,8 @@ def main() -> int:
 
     model = load_model(args.weights)
     info = process_video(model, src, args.output, args.conf, args.max_frames,
-                         use_lane=not args.no_lane)
+                         use_lane=not args.no_lane, imgsz=args.imgsz,
+                         detect_every=args.detect_every)
     print(f"完成：{args.output}")
     print("處理幀數：", info["frames"])
     print("平均 FPS：", info["avg_fps"])

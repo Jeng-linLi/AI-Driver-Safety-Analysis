@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import dataclass
 
 import cv2
 from ultralytics import YOLO
@@ -35,6 +36,46 @@ TARGET_CLASSES = {
 }
 
 
+@dataclass
+class Detection:
+    """單一偵測結果：類別名稱、Bounding Box (x1,y1,x2,y2)、Confidence。"""
+
+    name: str
+    bbox: tuple[int, int, int, int]
+    score: float
+
+
+def detect_and_draw(model: YOLO, frame, conf: float = 0.25, imgsz: int = 640):
+    """對單一畫面做 YOLO 推論，並直接在畫面上畫綠框 + 標籤。
+
+    Args:
+        imgsz: 推理解析度（越小越快；320 在 CPU 上約比 640 快一倍，精度略降）。
+    Returns:
+        (frame, detections)：畫好框的畫面，與 Detection 清單（供 Risk / 統計使用）。
+    """
+    results = model(frame, conf=conf, imgsz=imgsz, verbose=False)[0]
+    dets: list[Detection] = []
+    for box in results.boxes:
+        cls_id = int(box.cls[0])
+        name = model.names[cls_id]
+        if name not in TARGET_CLASSES:
+            continue
+        x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+        score = float(box.conf[0])
+        dets.append(Detection(name, (x1, y1, x2, y2), score))
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(
+            frame,
+            f"{name} {score:.2f}",
+            (x1, max(0, y1 - 6)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 0),
+            2,
+        )
+    return frame, dets
+
+
 def load_model(weights: str = "yolov8n.pt") -> YOLO:
     """載入 YOLO 模型；首次執行會自動下載預訓練權重（約 6MB）。"""
     return YOLO(weights)
@@ -46,11 +87,13 @@ def detect_video(
     output_path: str,
     conf: float = 0.25,
     max_frames: int = 600,
+    imgsz: int = 640,
 ) -> dict:
     """對影片逐幀做 Object Detection：畫框 → 寫入新影片。
 
     Args:
         conf: 只保留 Confidence >= conf 的預測（門檻越高越嚴格）。
+        imgsz: 推理解析度（越小越快；見 detect_and_draw）。
     Returns:
         {"frames": 處理幀數, "detections": 各類別被偵測到的總次數}
     """
@@ -71,31 +114,10 @@ def detect_video(
         if not ok:
             break
 
-        # 用 YOLO 對這一幀做推論（verbose=False 關掉每幀的終端輸出）
-        results = model(frame, conf=conf, verbose=False)[0]
-
-        for box in results.boxes:
-            cls_id = int(box.cls[0])
-            name = model.names[cls_id]
-            if name not in TARGET_CLASSES:
-                continue
-
-            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-            score = float(box.conf[0])
-            label = f"{name} {score:.2f}"
-
-            # 畫框 + 標籤
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(
-                frame,
-                label,
-                (x1, max(0, y1 - 6)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                (0, 255, 0),
-                2,
-            )
-            counts[name] = counts.get(name, 0) + 1
+        # 推論 + 畫框（共用 detect_and_draw）
+        frame, dets = detect_and_draw(model, frame, conf, imgsz)
+        for d in dets:
+            counts[d.name] = counts.get(d.name, 0) + 1
 
         writer.write(frame)
         n += 1
@@ -111,11 +133,12 @@ def main() -> int:
     parser.add_argument("output", help="輸出影片路徑")
     parser.add_argument("--weights", default="yolov8n.pt", help="YOLO 權重")
     parser.add_argument("--conf", type=float, default=0.25, help="Confidence 門檻")
+    parser.add_argument("--imgsz", type=int, default=640, help="推理解析度（越小越快）")
     parser.add_argument("--max-frames", type=int, default=600)
     args = parser.parse_args()
 
     model = load_model(args.weights)
-    info = detect_video(model, args.input, args.output, args.conf, args.max_frames)
+    info = detect_video(model, args.input, args.output, args.conf, args.max_frames, args.imgsz)
     print(f"完成：{args.output}")
     print("處理幀數：", info["frames"])
     print("各類別偵測次數：", info["detections"])

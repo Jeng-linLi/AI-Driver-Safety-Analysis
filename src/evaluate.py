@@ -18,23 +18,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import tempfile
 from pathlib import Path
 
-import yaml
 from ultralytics import YOLO
 
-
-def resolve_data_yaml(path: str) -> str:
-    """同 train.py：把 dataset.yaml 的相對 path 解析成絕對路徑，寫成臨時 yaml。"""
-    p = Path(path)
-    with open(p, "r", encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
-    cfg["path"] = str((p.parent / cfg["path"]).resolve())
-    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8")
-    yaml.safe_dump(cfg, tmp)
-    tmp.close()
-    return tmp.name
+from common import resolve_data_yaml
 
 
 def _to_float(v):
