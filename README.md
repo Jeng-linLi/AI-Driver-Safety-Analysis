@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 3 / 12（接續 Week 4 Fine-tuning）**
+> 狀態：**WIP（進行中）— 目前進度 Week 4 / 12（Week 1–4 完成，接續 Week 5 Evaluation）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -25,6 +25,7 @@
 - [x] 讀取圖片 / 影片 / 儲存影片（Week 1）
 - [x] Object Detection（car / person / truck / bus ...）— Week 2 ✅
 - [x] 自建交通 Dataset（YOLO 格式 + dataset.yaml）— Week 3 ✅
+- [x] Model Fine-tuning（YOLOv8n + 合成資料，mAP50 0.958）— Week 4 ✅
 - [ ] 自建交通 Dataset — Week 3
 - [ ] Model Fine-tuning — Week 4
 - [ ] Model Evaluation（mAP / Precision / Recall）— Week 5
@@ -55,11 +56,33 @@ Video/Webcam → Object Detection → Lane Detection → Risk Analysis → Visua
 
 ## 6. Model
 
-規劃中（Week 2–4，預計使用 YOLO + Transfer Learning）。
+- 骨幹：YOLOv8n（nano，約 3.0M 參數，適合 prototype / CPU）
+- 方法：Transfer Learning — 以官方預訓練 YOLOv8n 為起點，在自有資料上 Fine-tuning
+- 類別（4）：car / person / truck / bus
+- 權重：models/best.pt（由 src/train.py 訓練產生，已 gitignore）
+
+> 目前權重在「合成交通資料集」上訓練，mAP 很高是因為合成資料單純；
+> 換成真實交通資料後指標會更貼近實際，也更具有意義。
 
 ## 7. Training
 
-規劃中（Week 4）。
+```bash
+python src/train.py --epochs 20 --batch 16 --imgsz 416
+```
+
+- Epochs: 20 | Batch: 16 | Img size: 416 | Optimizer: auto | Device: CPU
+- 資料：data/dataset.yaml（合成資料集，120 張，80/20 split）
+- 產出：runs/detect/week4_traffic/（含曲線圖、驗證結果），並複製 best.pt → models/best.pt
+
+驗證集結果（best.pt）：
+
+| 類別 | Precision | Recall | mAP@.5 | mAP@.5-.95 |
+|------|-----------|--------|--------|------------|
+| all  | 0.953 | 0.927 | 0.958 | 0.867 |
+| car  | 1.000 | 0.939 | 0.955 | 0.916 |
+| person | 1.000 | 0.889 | 0.952 | 0.741 |
+| truck | 0.959 | 0.880 | 0.932 | 0.859 |
+| bus  | 0.854 | 1.000 | 0.992 | 0.950 |
 
 ## 8. Evaluation
 
@@ -136,7 +159,7 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 | 1 | Python / OpenCV / Git | ✅ 進行中 |
 | 2 | Object Detection (YOLO) | ✅ |
 | 3 | Dataset | ✅ |
-| 4 | Model Fine-tuning | ⬜ |
+| 4 | Model Fine-tuning | ✅ |
 | 5 | Model Evaluation | ⬜ |
 | 6 | Lane Detection | ⬜ |
 | 7 | Risk Analysis | ⬜ |
