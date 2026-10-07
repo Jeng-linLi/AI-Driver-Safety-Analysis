@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 4 / 12（Week 1–4 完成，接續 Week 5 Evaluation）**
+> 狀態：**WIP（進行中）— 目前進度 Week 5 / 12（接續 Week 6–8）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -26,9 +26,7 @@
 - [x] Object Detection（car / person / truck / bus ...）— Week 2 ✅
 - [x] 自建交通 Dataset（YOLO 格式 + dataset.yaml）— Week 3 ✅
 - [x] Model Fine-tuning（YOLOv8n + 合成資料，mAP50 0.958）— Week 4 ✅
-- [ ] 自建交通 Dataset — Week 3
-- [ ] Model Fine-tuning — Week 4
-- [ ] Model Evaluation（mAP / Precision / Recall）— Week 5
+- [x] Model Evaluation（mAP50 0.958, Confusion Matrix）— Week 5 ✅
 - [ ] Lane Detection — Week 6
 - [ ] Risk Analysis（LOW / MEDIUM / HIGH）— Week 7
 - [ ] Real-Time Pipeline — Week 8
@@ -86,7 +84,24 @@ python src/train.py --epochs 20 --batch 16 --imgsz 416
 
 ## 8. Evaluation
 
-規劃中（Week 5）。
+用 `src/evaluate.py` 在驗證集（24 張）上評估 models/best.pt：
+
+| 指標 | 數值 |
+|------|------|
+| Precision | 0.953 |
+| Recall | 0.927 |
+| mAP@.5 | 0.958 |
+| mAP@.5-.95 | 0.867 |
+
+每類 mAP@.5-.95：car 0.916 / person 0.741 / truck 0.859 / bus 0.950
+
+- Confusion Matrix：`runs/detect/week5_eval/confusion_matrix.png`
+- 完整指標：`results/evaluation_metrics.json`
+
+> 這些數字是在「合成資料」上得到的。因為合成場景單純（純色矩形），
+> 模型很容易學，所以指標偏高；這不代表它能在真實道路上同樣準確。
+> 換成真實交通資料後，指標會更貼近實際，弱點也會更明顯
+> （例如 person 的 mAP 明顯低於車輛，是常見的難點）。
 
 ## 9. Demo
 
@@ -131,6 +146,14 @@ python src/detection.py data/raw/your_driving_video.mp4 results/videos/detected.
 
 > 僅關注道路安全相關類別：person / bicycle / car / motorcycle / bus / truck / traffic light / stop sign。
 
+### Week 5 — Evaluation
+
+```bash
+python src/evaluate.py --weights models/best.pt
+```
+
+> 輸出指標到 results/evaluation_metrics.json，混淆矩陣到 runs/detect/week5_eval/confusion_matrix.png。
+
 ## 12. Results
 
 陸續補上（Week 5 / Week 9）。
@@ -156,11 +179,11 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 
 | Week | 主題 | 狀態 |
 |------|------|------|
-| 1 | Python / OpenCV / Git | ✅ 進行中 |
+| 1 | Python / OpenCV / Git | ✅ |
 | 2 | Object Detection (YOLO) | ✅ |
 | 3 | Dataset | ✅ |
 | 4 | Model Fine-tuning | ✅ |
-| 5 | Model Evaluation | ⬜ |
+| 5 | Model Evaluation | ✅ |
 | 6 | Lane Detection | ⬜ |
 | 7 | Risk Analysis | ⬜ |
 | 8 | Real-Time Integration | ⬜ |
