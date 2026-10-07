@@ -1,0 +1,128 @@
+# AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
+
+> 狀態：**WIP（進行中）— 目前進度 Week 1 / 12**
+> 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
+> （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
+>
+> ⚠️ **Disclaimer**：本專案是「學習用 prototype」，**不是**可上路的自駕車系統，
+> 也**不宣稱**達到任何 Autonomous Driving 安全認證標準。
+
+---
+
+## 1. Project Overview
+
+一套基於 Computer Vision 與 Object Detection 的駕駛安全分析系統：
+從行車影片（或 webcam）中偵測道路物件、分析車道與基本道路風險，
+並以即時 / 近即時方式呈現結果（Bounding Box、標籤、Confidence、車道線、Risk Level、FPS）。
+
+## 2. Motivation
+
+對 AI 初學者而言，最好的學習方式就是「邊做邊學」一個真實、能跑、能放上 GitHub 的專案。
+本專案串起一條完整的 AI 工程鏈：從讀資料、訓練模型、評估、到做成 demo 與技術報告。
+
+## 3. Features
+
+- [x] 讀取圖片 / 影片 / 儲存影片（Week 1）
+- [ ] Object Detection（car / person / truck ...）— Week 2
+- [ ] 自建交通 Dataset — Week 3
+- [ ] Model Fine-tuning — Week 4
+- [ ] Model Evaluation（mAP / Precision / Recall）— Week 5
+- [ ] Lane Detection — Week 6
+- [ ] Risk Analysis（LOW / MEDIUM / HIGH）— Week 7
+- [ ] Real-Time Pipeline — Week 8
+- [ ] Experiments Log — Week 9
+- [ ] Web Demo（Streamlit）— Week 10
+- [ ] Engineering（Dockerfile / testing）— Week 11
+- [ ] Portfolio（README / Report / Demo）— Week 12
+
+## 4. System Architecture
+
+```
+（規劃中，Week 7–8 整合時補上架構圖）
+Video/Webcam → Object Detection → Lane Detection → Risk Analysis → Visualization
+```
+
+## 5. Dataset
+
+規劃中（Week 3）。
+
+## 6. Model
+
+規劃中（Week 2–4，預計使用 YOLO + Transfer Learning）。
+
+## 7. Training
+
+規劃中（Week 4）。
+
+## 8. Evaluation
+
+規劃中（Week 5）。
+
+## 9. Demo
+
+規劃中（Week 8 / Week 10）。
+
+## 10. Installation
+
+```bash
+# 1. 建立虛擬環境（推薦，避免污染系統 Python）
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# 2. 安裝依賴
+pip install -r requirements.txt
+```
+
+## 11. Usage（Week 1）
+
+```bash
+# 讀取並顯示影片資訊（幀數 / FPS / 解析度）
+python src/video_io.py video data/raw/your_driving_video.mp4
+
+# 處理影片並存檔（這裡只是示範轉灰階）
+python src/video_io.py process data/raw/your_driving_video.mp4 results/videos/out.mp4 --grayscale
+
+# 播放影片（需要你自己的電腦有圖形介面）
+python src/video_io.py show data/raw/your_driving_video.mp4
+```
+
+> 還沒有行車影片？把任何一段 mp4 放進 `data/raw/` 就能先試跑。
+> （注意：`data/raw/*.mp4` 已被 .gitignore 忽略，不會進 Git。）
+
+## 12. Results
+
+陸續補上（Week 5 / Week 9）。
+
+## 13. Limitations
+
+- 僅為學習用 prototype，不具備任何安全認證。
+- 依賴公開 pretrained model，準確度受限於訓練資料。
+
+## 14. Future Work
+
+- 加入更精準的距離估測（depth estimation）
+- 擴充 Dataset 與類別
+- 部署到邊緣裝置
+
+## 15. Author
+
+Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
+
+---
+
+### 📅 12-Week Roadmap
+
+| Week | 主題 | 狀態 |
+|------|------|------|
+| 1 | Python / OpenCV / Git | ✅ 進行中 |
+| 2 | Object Detection (YOLO) | ⬜ |
+| 3 | Dataset | ⬜ |
+| 4 | Model Fine-tuning | ⬜ |
+| 5 | Model Evaluation | ⬜ |
+| 6 | Lane Detection | ⬜ |
+| 7 | Risk Analysis | ⬜ |
+| 8 | Real-Time Integration | ⬜ |
+| 9 | Experiments | ⬜ |
+| 10 | Web Demo (Streamlit) | ⬜ |
+| 11 | Engineering | ⬜ |
+| 12 | Portfolio | ⬜ |

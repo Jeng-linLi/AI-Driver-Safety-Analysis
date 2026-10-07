@@ -1,0 +1,6 @@
+# AI Driver Safety Analysis — Python 依賴
+# 安裝方式：pip install -r requirements.txt
+# 目前只放 Week 1 需要的套件；後續週次會陸續加入（ultralytics / torch ...）
+
+numpy>=2.0
+opencv-python>=4.10

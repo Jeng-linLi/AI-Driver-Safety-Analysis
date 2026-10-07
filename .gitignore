@@ -1,0 +1,28 @@
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# === 大型媒體檔（不進 Git，避免 repo 肥大）===
+data/raw/*.mp4
+data/raw/*.avi
+data/raw/*.mov
+data/processed/*.mp4
+results/videos/*.mp4
+results/videos/*.avi
+results/images/*.png
+results/images/*.jpg
+# 保留目錄結構
+!**/.gitkeep
+
+# === 模型權重（通常很大，後續用 Git LFS 或 Release 管理）===
+models/*.pt
+models/*.onnx
+
+# === 系統 / 編輯器 ===
+.DS_Store
+.idea/
+.vscode/
