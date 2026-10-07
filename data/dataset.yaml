@@ -1,0 +1,9 @@
+# Week 3 — YOLO Dataset 設定
+# path 相對於本 dataset.yaml 所在目錄（data/）
+path: traffic_dataset
+train: images/train
+val: images/val
+
+# 類別數量與名稱（順序要與標註的 class_id 對應）
+nc: 4
+names: [car, person, truck, bus]
