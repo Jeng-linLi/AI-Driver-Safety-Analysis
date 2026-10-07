@@ -1,6 +1,6 @@
 # AI Driver Safety Analysis — Real-Time Road and Vehicle Detection
 
-> 狀態：**WIP（進行中）— 目前進度 Week 7 / 12（接續 Week 8）**
+> 狀態：**WIP（進行中）— 目前進度 Week 8 / 12（接續 Week 9–12）**
 > 這是一個 AI 大一學生的 Portfolio Project：建立一套完整的 AI workflow prototype
 > （Data → Model → Training → Evaluation → Computer Vision → Risk Analysis → System Integration → Demo → GitHub）。
 >
@@ -29,6 +29,7 @@
 - [x] Model Evaluation（mAP50 0.958, Confusion Matrix）— Week 5 ✅
 - [x] Lane Detection（Canny + Hough + ROI）— Week 6 ✅
 - [x] Risk Analysis（LOW / MEDIUM / HIGH，啟發式）— Week 7 ✅
+- [x] Real-Time Integration（Detection + Lane + Risk + FPS）— Week 8 ✅
 - [ ] Risk Analysis（LOW / MEDIUM / HIGH）— Week 7
 - [ ] Real-Time Pipeline — Week 8
 - [ ] Experiments Log — Week 9
@@ -39,8 +40,12 @@
 ## 4. System Architecture
 
 ```
-Video/Webcam → Object Detection (YOLO) → Lane Detection (Canny+Hough) → Risk Analysis → Visualization
-（架構圖預計 Week 7–8 整合時補上）
+Video/Webcam
+   └─> [1] Object Detection (YOLOv8n)  → 綠框 + 類別 + Confidence
+   └─> [2] Lane Detection (Canny+Hough) → 黃線
+   └─> [3] Risk Analysis (heuristic)    → 風險橫幅 LOW/MEDIUM/HIGH
+   └─> [4] Visualization (FPS + 幀數)   → 輸出影片 / webcam
+（Week 8 已把 [1][2][3][4] 串成單一即時管線 src/realtime.py）
 ```
 
 ## 5. Dataset
@@ -186,6 +191,20 @@ python src/risk_analysis.py data/raw/your_driving_video.mp4 results/videos/risk_
 
 > ⚠️ 這是「學習用」簡化規則，絕非真實自駕車安全判斷。真實系統還需要距離估測、追蹤、軌跡預測。
 
+### Week 8 — Real-Time Integration
+
+```bash
+# 把 Detection + Lane + Risk 串成即時管線，輸出帶 FPS / 風險橫幅的影片
+python src/realtime.py data/raw/your_driving_video.mp4 results/videos/realtime.mp4 --weights yolov8n.pt
+
+# 用 webcam 即時分析（裝置編號 0）
+python src/realtime.py 0 results/videos/webcam_out.mp4
+```
+
+實測效能（CPU、合成 640×360 影片）：平均約 **21 FPS**（YOLOv8n + 車道 + 風險同跑）。
+> 這是「近即時」prototype：合成畫面簡單所以 FPS 偏高；真實影片物件多、解析度高時會明顯變慢。
+> 要真正即時需上 GPU / 更小模型（YOLOv8nano 已是最輕量級之一）/ 或只對關鍵幀做偵測。
+
 ## 12. Results
 
 陸續補上（Week 5 / Week 9）。
@@ -218,7 +237,7 @@ Johnny, Jeng-lin Li — AI 大一學生 / Portfolio Project
 | 5 | Model Evaluation | ✅ |
 | 6 | Lane Detection | ✅ |
 | 7 | Risk Analysis | ✅ |
-| 8 | Real-Time Integration | ⬜ |
+| 8 | Real-Time Integration | ✅ |
 | 9 | Experiments | ⬜ |
 | 10 | Web Demo (Streamlit) | ⬜ |
 | 11 | Engineering | ⬜ |
